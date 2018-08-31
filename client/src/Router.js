@@ -10,7 +10,7 @@ class Routers extends Component {
             
                 <div>
                     <Route exact path="/" component={ShoppingList} />
-                    <Route exact path="/ItemList" component={ItemList}  />
+                    <Route exact path="/ItemList/:itemName/:id" component={ItemList}  />
                  </div>
             </Router>
         )

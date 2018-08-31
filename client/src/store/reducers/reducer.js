@@ -34,6 +34,14 @@ export default (state = INITIAL_STATE, action) => {
         return {
           items:[...state.items.filter(i=> i._id!=action.payload)]
         }
+        case "DELETE_LIST_ITEM":
+        return {
+            list:[...state.list.filter(i=> i._id!=action.payload)]
+        }
+        case "EDIT_LIST":
+        return {
+            list:action.payload
+        }
         case "EDIT_ITEM":
         return {
             ...state

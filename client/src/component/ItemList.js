@@ -6,14 +6,17 @@ import {
 } from 'reactstrap';
 import AppNavbar from './AppNavbar';
 import { connect } from 'react-redux';
-import { GetItems, AddItemList, GetItemsList, DeleteItem, EditItem } from '../store/Actions/action';
+import { GetItems, AddItemList, GetItemsList, Deletelist, EditList } from '../store/Actions/action';
 
 class ItemList extends Component {
     constructor(props) {
         super(props);
         this.state = {
             modal: false,
+            editModal: false,
             items: [],
+            editId: null,
+            editInd: null,   
             modalname: '',
             modalprice: '',
             MakerId: 0,
@@ -21,22 +24,24 @@ class ItemList extends Component {
             individual_Item_List: ''
         }
 
-        this.toggle = this.toggle.bind(this);
+        this.editToggle = this.editToggle.bind(this);
         this.modelname = this.modelname.bind(this);
         this.modalprice = this.modalprice.bind(this);
         this.toggle = this.toggle.bind(this);
         this.submit = this.submit.bind(this);
-        this.props.isGetItemsList();
 
     }
-    componentDidMount() {
-        this.props.isGetItems();
-        this.props.isGetItemsList();
+    componentDidMount(){
+        this.props.isGetItemsList(this.props.match.params.id)
     }
-
     toggle() {
         this.setState({
             modal: !this.state.modal
+        });
+    }
+    editToggle() {
+        this.setState({
+            editModal: !this.state.editModal
         });
     }
 
@@ -52,57 +57,64 @@ class ItemList extends Component {
         })
     }
     submit() {
-        console.log("submit",this.props.stateGetItems);
 
-       let itemObj= this.props.stateGetItems.filter(a=>a._id==this.state.MakerId)
-       console.log("ii",itemObj)
         let obj = {
             ItemName: this.state.modalname,
             ItemPrice: this.state.modalprice,
-            ManufacturedId: this.state.MakerId
+            ManufacturedId: this.props.match.params.id
         }
-        console.log("obj", obj);
         this.setState({
             modalname: '',
             modalprice: '',
-            MakerId: 0
         },
             this.toggle())
         this.props.isAddItemList(obj)
        
     }
 
-    edit(id, val) {
-        console.log("val",val);
-        // console.log()
+    handleEdit(){
+        let arr = this.props.stateGetItemslist
+        arr[this.state.editInd].ItemName = this.state.modalname
+        arr[this.state.editInd].ItemPrice = this.state.modalprice
+        let obj = {
+            _id: this.state.editId,
+            ItemName: this.state.modalname,
+            ItemPrice: this.state.modalprice,
+            ManufacturedId: this.props.match.params.id,
+            arr: arr
+        }
+        this.editToggle();
         this.setState({
-            modalname: val.ItemName,
-            modalprice: val.ItemPrice,
-            MakerId: val.ManufacturedId,
-            individual_Item_List: val
-
-        }, )
-        this.toggle()
+            editId: null,
+            modalname : '',
+            modalprice : ''
+        })
+        this.props.isEditList(obj._id,obj)
+    }
+    
+    edit(ind,id, val) {
+        this.setState({
+            editId: id,
+            editInd: ind,
+            modalname : val.ItemName,
+            modalprice : val.ItemPrice
+        })
+        this.editToggle()
+    }
+    Deletelist(id){
+        this.props.isDeletelist(id)
     }
     render() {
-        let items = [];
-        items = this.props.stateGetItems
-
         let list = [];
         list = this.props.stateGetItemslist
-
-
-        console.log("items", items)
-        console.log("list", list)
-
         return (
             <div>
-                <AppNavbar />
+                <AppNavbar pagename={this.props.match.params.itemName} />
                 <Button
                     color="dark"
                     onClick={this.toggle.bind(this)} >Add Item</Button>
                 <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
-                    <ModalHeader toggle={this.toggle}>Add /Edit Item List</ModalHeader>
+                    <ModalHeader toggle={this.toggle}>Add Item List</ModalHeader>
                     <ModalBody>
                         <Form>
                             <FormGroup>
@@ -112,29 +124,29 @@ class ItemList extends Component {
                                 <Input type="text" name="modalprice" id="price" value={this.state.modalprice} onChange={this.modalprice} />
 
                             </FormGroup>
-
-                            <FormGroup>
-                                {items.length > 0 &&
-                                    <div>
-                                        <Label for="exampleSelect">Manufactured By</Label>
-                                        <select defaultValue="1" onChange={(e) => this.setState({ MakerId: e.target.value })}>
-                                            <option value={this.state.MakerId}>-- Select --</option>
-                                            {items.map((val, ind) => {
-                                                return (
-                                                    <option key={ind} value={val._id} >{val.name}</option>
-                                                )
-                                            }
-                                            )
-                                            }
-                                        </select>
-                                    </div>
-                                }
-                            </FormGroup>
                         </Form>
                     </ModalBody>
                     <ModalFooter>
                         <Button color="primary" onClick={this.submit}>Add</Button>
                         <Button color="secondary" onClick={this.toggle}>Cancel</Button>
+                    </ModalFooter>
+                </Modal>
+                <Modal isOpen={this.state.editModal} toggle={this.editToggle} className={this.props.className}>
+                    <ModalHeader toggle={this.editToggle}>Edit Item List</ModalHeader>
+                    <ModalBody>
+                        <Form>
+                            <FormGroup>
+                                <Label for="exampleEmail">Item Name </Label>
+                                <Input type="text" name="modalname" id="name" value={this.state.modalname} onChange={this.modelname} />
+                                <Label for="exampleEmail">Item Price</Label>
+                                <Input type="text" name="modalprice" id="price" value={this.state.modalprice} onChange={this.modalprice} />
+
+                            </FormGroup>
+                        </Form>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="primary" onClick={this.handleEdit.bind(this)}>Edit</Button>
+                        <Button color="secondary" onClick={this.editToggle}>Cancel</Button>
                     </ModalFooter>
                 </Modal>
                 <div className="container">
@@ -158,8 +170,8 @@ class ItemList extends Component {
                                             <td>{val.ItemName}</td>
                                             <td>{val.ItemPrice}</td>
                                             <td>{val.Manufactured[0].name}</td>
-                                            <td><button className="btn btn-outline-warning col-8" onClick={this.edit.bind(this, val._id, val)}>  Edit  </button></td>
-                                            <td><button className="btn btn-outline-danger col-8">Delete</button></td>
+                                            <td><button className="btn btn-outline-warning col-8" onClick={this.edit.bind(this,ind, val._id, val)}>  Edit  </button></td>
+                                            <td><button className="btn btn-outline-danger col-8" onClick={this.Deletelist.bind(this,val._id)} >Delete</button></td>
                                         </tr>
                                     )
                                 })}
@@ -172,7 +184,6 @@ class ItemList extends Component {
     }
 }
 const mapStateToProps = (state) => {
-    console.log("Isget Item List ",state.root.list)
     return {
         stateGetItemslist: state.root.list,
         stateGetItems: state.root.items,
@@ -183,11 +194,14 @@ const mapDispatchToProps = (dispatch) => {
         isAddItemList: (obj) => {
             dispatch(AddItemList(obj))
         },
-        isGetItems: () => {
-            dispatch(GetItems())
+        isEditList: (id,obj) => {
+            dispatch(EditList(id,obj))
         },
-        isGetItemsList: () => {
-            dispatch(GetItemsList())
+        isGetItemsList: (id) => {
+            dispatch(GetItemsList(id))
+        },
+        isDeletelist: (id) => {
+            dispatch(Deletelist(id))
         }
     }
 }

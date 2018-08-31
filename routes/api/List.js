@@ -7,8 +7,8 @@ const Item = require('../../models/Item');
 //@route GET api Items
 // @desc Get All Items 
 // @ access Public
-router.get('/', (req, res) => {
-    List.find()
+router.get('/:id', (req, res) => {
+    List.find({Manufactured: req.params.id})
         .select("Manufactured ItemName ItemPrice _id")
         .populate('Manufactured').sort({ date: -1 })
         .exec()
@@ -25,7 +25,6 @@ router.post('/', (req, res) => {
         Manufactured: req.body.ManufacturedId
     });
     newItem.save().then((r) => {
-        console.log("R", r)
         let id = r._id;
         console.log("id", id);
         List.findById(id)
@@ -33,7 +32,6 @@ router.post('/', (req, res) => {
             .populate('Manufactured').sort({ date: -1 })
             .exec()
             .then(items => {
-                console.log("Items", items);
                 res.json(items)
             })
     })
@@ -41,20 +39,24 @@ router.post('/', (req, res) => {
 //@route edit api/items/:id
 // @desc edit A item
 // @ access Public
-router.put('/:id', function (req, res) {
-    console.log("req.params id", req.params.id)
-    console.log("req.params", req.body)
-    List.findOneAndUpdate({ _id: req.params.id }, req.body, function (err, doc) {
-        if (err) return res.send(500, { error: err });
-        return res.send("succesfully saved");
+router.put('/edit/:id',(req, res)=> {
+    List.findOneAndUpdate({"_id":req.params.id},{"$set":{"ItemName":req.body.ItemName,"ItemPrice": req.body.ItemPrice }}, (err, doc)=> {
+        res.send(req.body)
     })
 })
 //@route delete api/items/:id
 // @desc delete A item
 // @ access Public
 router.delete('/:id', (req, res) => {
-    List.findById(req.params.id).
-        then(item => item.remove().then(() => res.json({ success: true })))
+    List.findByIdAndRemove(req.params.id)
+        // .then(delItem =>{
+        //     List.find({Manufactured: req.params.manId})
+        //     .select("Manufactured ItemName ItemPrice _id")
+        //     .populate('Manufactured')
+        //     .exec()
+        //     .then(items => res.json(items))
+        // })
+        .then(()=> res.send({success: true}))
         .catch(err => res.status(404).json({ success: false }));
 })
 module.exports = router;

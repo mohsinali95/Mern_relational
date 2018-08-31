@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 export function GetItems() {
     return dispatch => {
@@ -12,12 +11,11 @@ export function GetItems() {
     );
 }}
 
-export function GetItemsList() {
+export function GetItemsList(id) {
     return dispatch => {
         dispatch(SetItemLoading())
-        axios.get('/api/list')
+        axios.get('/api/list/'+id)
         .then(res =>{
-            console.log("res",res)
          dispatch({
         type : "GET_ITEMS_LIST",
         payload:res.data
@@ -74,7 +72,29 @@ export function DeleteItem(id) {
             type: "DELETE_ITEM",
             payload:id
         }))
+    }
 }
+export function EditList(id,obj){
+    return dispatch => {
+        axios.put('/api/List/edit/'+id,obj)
+        .then(res =>{
+            dispatch({
+                type: "EDIT_LIST",
+                payload: res.data.arr
+            })
+        })
+    }
+}
+export function Deletelist(id){
+    return dispatch => {
+        axios.delete('/api/List/'+id)
+        .then(res=>{
+            dispatch({
+                type:'DELETE_LIST_ITEM',
+                payload: id
+            })
+        })
+    }
 }
 export function SetItemLoading() {
     return {

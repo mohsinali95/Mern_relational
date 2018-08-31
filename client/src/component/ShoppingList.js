@@ -4,6 +4,7 @@ import {
     ListGroup,
     Container, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input, FormText
 } from 'reactstrap';
+import history from '../History';
 // import {CSSTransition ,TransitionGroup} from 'react-transition-group';
 import uuid from 'uuid';
 import { connect } from 'react-redux';
@@ -63,6 +64,12 @@ class ShoppingList extends Component {
         })
     }
 
+    showItems(id,name){
+        history.push({
+            pathname: '/ItemList/'+name+'/'+id,
+        })
+    }
+
 
     update() {
         this.state.itemstate.name = this.state.modalname
@@ -77,7 +84,7 @@ class ShoppingList extends Component {
         return (
 
             <div>
-                <AppNavbar/>
+                <AppNavbar pagename="Manufactures"/>
             <Container>
 
                 <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
@@ -113,7 +120,7 @@ class ShoppingList extends Component {
                                     <div className="col-sm-6">
                                     <button className="btn btn-outline-danger float-right pl-4 pr-4 mr-2" onClick={this.delete.bind(this, val._id)}>Delete</button>
                                     <button className="btn btn-outline-warning float-right mr-2" onClick={this.edit.bind(this, val._id, val)}>Edit</button>
-                                    <button className="btn btn-outline-success float-right pl-4 pr-4 mr-2" onClick={this.delete.bind(this, val._id)} >Items</button>
+                                    <button className="btn btn-outline-success float-right pl-4 pr-4 mr-2" onClick={this.showItems.bind(this, val._id,val.name)} >Items</button>
                                     </div>
                                 </div>
                                 </div>
